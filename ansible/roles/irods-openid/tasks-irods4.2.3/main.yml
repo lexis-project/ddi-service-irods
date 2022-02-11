@@ -1,0 +1,5 @@
+- name: Install openid auth plugin
+  become: true
+  become_method: sudo
+  become_user: root
+  import_tasks: install.yml

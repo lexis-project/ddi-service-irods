@@ -1,0 +1,25 @@
+- name: install Globus packages
+  apt:
+      name: "{{item}}"
+  with_items:
+    - globus-gridftp-server-progs
+    - globus-gass-copy-progs
+    - libglobus-gss-assist-dev
+    - libglobus-common-dev
+    - libglobus-gridftp-server-dev
+    - libglobus-gridmap-callout-error-dev
+    - libcurl4-openssl-dev
+
+- name: install further required packages
+  apt:
+      name: "{{item}}"
+  with_items:
+    - git
+    - g++
+    - dpkg-dev
+    - cdbs
+    - globus-gsi-cert-utils-progs
+    - globus-proxy-utils
+    - build-essential
+    - cmake
+    - make

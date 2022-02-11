@@ -1,0 +1,6 @@
+- name: Deploy HANDLE system
+
+  hosts: all
+  roles:
+    - HANDLE-9
+    - setup

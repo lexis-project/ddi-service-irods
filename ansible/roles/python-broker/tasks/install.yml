@@ -1,0 +1,189 @@
+- name: install git
+  apt:
+    name: git
+
+- name: pip3
+  apt:
+    name: python3-pip
+
+- name: python3-psycopg2
+  apt:
+    name: python3-psycopg2
+
+- name: uwsgi-core
+  apt:
+    name: uwsgi-core
+
+- name: install nginx
+  apt:
+    name: nginx-light
+
+- name: disable http site
+  file:
+    state: absent
+    path: /etc/nginx/sites-enabled/default
+
+- name: enable https site
+  copy:
+    src: ../files/https.conf
+    dest: /etc/nginx/sites-enabled/https.conf
+
+- name: patch https conf
+  lineinfile:
+    path: /etc/nginx/sites-enabled/https.conf
+    regexp: ' server_name  .*;'
+    line: ' server_name  {{broker_host}};'
+
+- name: get broker
+  file:
+    state: absent
+    path: auth_microservice
+- shell: >
+    git clone https://github.com/RubenGarcia/auth_microservice
+
+- name: get rename
+  apt:
+    name: rename
+
+- name: create config files
+  file:
+    state: directory
+    path: /etc/auth_microservice
+- shell: cp auth_microservice/example/config/* /etc/auth_microservice
+- shell: "rename 's/.example$//' /etc/auth_microservice/*.example"
+
+- name: create db key
+  shell: >
+    python3 -c "import os, binascii; print(binascii.hexlify(os.urandom(32)).decode('utf-8'))"
+  register: dbkey
+
+- name: create admin key
+  shell: >
+    python3 -c "import os, binascii; print(binascii.hexlify(os.urandom(32)).decode('utf-8'))"
+  register: adminkey
+
+- name: install db key
+  lineinfile:
+    path: /etc/auth_microservice/db.key
+    regexp: '[64byte hex]'
+    line: "{{ dbkey.stdout }}"
+
+- name: install admin key
+  lineinfile:
+    path: /etc/auth_microservice/admin.key
+    regexp: '[64byte hex]'
+    line: "{{ adminkey.stdout }}"
+
+- name: db credentials
+  lineinfile:
+    path: /etc/auth_microservice/db.credentials
+    regexp: '    "user": ".*",'
+    line: '    "user": "{{broker_user}}",'
+- lineinfile:
+    path: /etc/auth_microservice/db.credentials
+    regexp: '    "password": ".*",'
+    line: '    "password": "{{broker_db_password}}",'
+- lineinfile:
+    path: /etc/auth_microservice/db.credentials
+    regexp: '    "backend": "django.db.backends.*"'
+    line: '    "backend": "django.db.backends.postgresql_psycopg2"'
+- lineinfile:
+    path: /etc/auth_microservice/db.credentials
+    regexp: '    "host": ".*",'
+    line: '    "host": "{{db_host}}",'
+- lineinfile:
+    path: /etc/auth_microservice/db.credentials
+    regexp: '    "port": ".*",'
+    line: '    "port": "{{db_port}}",'
+
+- name: config.json creation
+  copy:
+    src: ../files/config.json
+    dest: /etc/auth_microservice/config.json
+
+- name: cert (public)
+  copy:
+    src: ../files/auth_microservice.pem
+    dest: /etc/ssl/certs/auth_microservice.pem
+
+- name: cert (private)
+  copy:
+    src: ../files/auth_microservice.key
+    dest: /etc/ssl/certs/auth_microservice.key
+
+- name: cert (chain)
+  copy:
+    src: ../files/chain.pem
+    dest: chain.pem
+
+- name: combine cert and chain
+  shell: "cat chain.pem >> /etc/ssl/certs/auth_microservice.pem"
+
+- name: config.json patch
+  lineinfile:
+    path: /etc/auth_microservice/config.json
+    regexp: '            "metadata_url": ".*"'
+    line: '            "metadata_url": "{{keycloak_server}}/.well-known/openid-configuration"'
+
+- lineinfile:
+    path: /etc/auth_microservice/config.json
+    regexp: '            "client_id": ".*",'
+    line: '            "client_id": "{{broker_client_id}}",'
+
+- lineinfile:
+    path: /etc/auth_microservice/config.json
+    regexp: '            "client_secret": ".*",'
+    line: '            "client_secret": "{{broker_client_secret}}",'
+
+- lineinfile:
+    path: /etc/auth_microservice/config.json
+    regexp: '    "redirect_uri": "https://.*/authcallback",'
+    line: '    "redirect_uri": "https://{{broker_host}}/authcallback",'
+
+- lineinfile:
+    path: /etc/auth_microservice/config.json
+    regexp: '    "root_return_to": "https://.*/callback",'
+    line: '    "root_return_to": "https://{{wp3webserver_host}}/callback",'
+
+- lineinfile:
+    path: auth_microservice/auth_microservice/settings.py
+    regexp: 'ALLOWED_HOSTS = \[.*'
+    line: 'ALLOWED_HOSTS = [ "{{broker_host}}", '
+
+- lineinfile:
+    path: auth_microservice/auth_microservice/settings.py
+    regexp: "    'loggers': {.*"
+    line: "    'loggers': { 'django.utils.autoreload': { 'level': 'INFO', },"
+
+- name: uwsgi configuration
+  lineinfile:
+    path: auth_microservice/example/uwsgi.ini
+    regexp: 'home=/home/auth_microservice/auth_microservice/venv'
+    line: 'home=/usr/local/lib/python3.5/dist-packages/auth_microservice'
+
+- name: install microservice
+  shell: python3 -m pip install --force-reinstall auth_microservice/
+
+- name: apply migrations
+  shell: python3 auth_microservice/auth_microservice/manage.py migrate
+
+- name: uwsgi prerequisites
+  apt:
+    name: uwsgi-plugin-python3
+
+- name: send uwsgi.ini
+  copy:
+    src=../files/uwsgi.ini
+    dest=uwsgi.ini
+
+- name: cleanup microservice
+  shell: pkill uwsgi
+  ignore_errors: true
+
+- name: run microservice
+  shell: uwsgi --ini uwsgi.ini
+
+- name: restart nginx
+  service:
+    state: restarted
+    name: nginx

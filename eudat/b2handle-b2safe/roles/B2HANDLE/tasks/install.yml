@@ -1,0 +1,9 @@
+- name: Install python-pip in case it isn't installed
+  apt:
+    name: python-pip
+    update_cache: yes
+
+- name: Install latest version of B2HANDLE
+  pip:
+    name: b2handle
+  become: yes

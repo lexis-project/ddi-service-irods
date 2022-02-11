@@ -1,0 +1,25 @@
+- name: Install jq
+  apt:
+    name: jq
+
+- name: Install moreutils
+  apt:
+    name: moreutils
+
+
+- name: Edit iRODS server_config.json file 1
+  shell: sudo cat /etc/irods/server_config.json | jq '.plugin_configuration.rule_engines += [{{ audit_file | to_nice_json }}]' | sudo sponge /etc/irods/server_config.json
+  vars:
+     audit_file: "{{ lookup('file','plugin.json') | from_json }}"
+
+- name: Edit iRODS server_config.json file 2
+  shell: sudo cat /etc/irods/server_config.json | jq '.rule_engine_namespaces += ["audit_"]' | sudo sponge /etc/irods/server_config.json
+
+- name: Change file ownership, group and permissions
+  file:
+    path: /etc/irods/server_config.json
+    owner: irods
+    group: irods
+
+- name: Restart irods
+  shell: sudo /etc/init.d/irods restart

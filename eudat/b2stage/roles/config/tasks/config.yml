@@ -1,0 +1,28 @@
+- name: Configure /etc/gridftp.conf
+  lineinfile:
+    path: "/etc/gridftp.conf"
+    line: "{{ item }}"
+  with_items:
+    - '$GLOBUS_ERROR_VERBOSE 1'
+    - '$GLOBUS_TCP_PORT_RANGE 50000,51000'
+    - 'export IRODS_PATH="/usr"'
+    - 'log_level ALL'
+    - 'log_single "/var/log/globus-gridftp-server.log"'
+    - 'log_transfer "/var/log/globus-gridftp-server-transfer.log"'
+    - '$LD_LIBRARY_PATH "$LD_LIBRARY_PATH:{{ preferred_path }}/iRODS_DSI"'
+    - '$irodsConnectAsAdmin "rods'
+    - 'load_dsi_module iRODS'
+    - 'auth_level 4'
+    - '$HOME /root'
+
+- name: Edit /etc/init.d/globus-gridftp-server
+  lineinfile:
+    path: "/etc/init.d/globus-gridftp-server"
+    insertafter: '### END INIT INFO'
+    line: 'export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:{{ preferred_path }}/iRODS_DSI/"'
+
+- name: restart gridftp service
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    name: globus-gridftp-server

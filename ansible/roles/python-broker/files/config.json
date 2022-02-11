@@ -1,0 +1,16 @@
+{
+    "redirect_uri": "https://<my-domain>/authcallback",
+    "root_return_to": "https://<my-app>/callback",
+    "root_default_provider": "keycloak",
+    "url_expiration_timeout": 300,
+    "real_time_validate_default": false,
+    "real_time_validate_cache_retention_timeout": 60,
+    "providers": {
+        "keycloak_openid": {
+            "standard": "OpenID Connect",
+            "client_id": "<client-id>",
+            "client_secret": "<client-secret>",
+            "metadata_url": "https://<provider-1-domain>/.well-known/openid-configuration"
+        }
+    }
+}

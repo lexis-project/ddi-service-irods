@@ -1,0 +1,10 @@
+- name: Configure postgresql
+  become: true
+  become_user: postgres
+  import_tasks: dbconfig-api.yml
+
+- name: restart postgresql
+  become: true
+  service:
+    name: postgresql
+    state: restarted

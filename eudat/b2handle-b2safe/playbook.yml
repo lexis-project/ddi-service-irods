@@ -1,0 +1,9 @@
+- name: Deploy EUDAT services
+
+  hosts: all
+  roles:
+    - B2HANDLE
+    - B2SAFE
+    - Config
+    - install
+    - test

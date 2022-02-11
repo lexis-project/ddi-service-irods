@@ -1,0 +1,16 @@
+hostname: irods-eudat-ansible
+B2HANDLE_location: "/home/ubuntu/"
+Handle_server_url: "https://handle-test.host:8000"
+private_key_path: "/opt/eudat/b2safe/conf/1001_USER01_300_privkey.pem"
+cert_only_path: "/opt/eudat/b2safe/conf/1001_USER01_300_certificate_only.pem"
+prefix: 1001
+Resource: demoResc
+reverse_lookup_user: handleserver
+irods_user: rods
+irods_zone: tempZone
+local_private_key: "/home/ubuntu/Downloads/1001_USER01_300_privkey.pem"
+local_cert_only: "/home/ubuntu/Downloads/1001_USER01_300_certificate_only.pem"
+B2SAFE_location: "/home/ubuntu"
+user: ubuntu
+HTTPS_VERIFY: True
+reverse_lookup_password: "{{vault_reverse_lookup_password }}"

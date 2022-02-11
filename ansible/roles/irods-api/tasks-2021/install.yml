@@ -1,0 +1,74 @@
+#https://github.com/pyinstaller/pyinstaller/issues/4197
+- name: remove outdated packages
+  apt:
+    name: python3-cryptography
+    state: absent
+
+- name: install prerequisites (2)
+  shell: CRYPTOGRAPHY_DONT_BUILD_RUST=1 python3 -m pip install mozilla_django_oidc cryptography globus_sdk
+
+- name: cleanup portal code
+  file:
+    path: api
+    state: absent
+
+- name: get portal code
+  git:
+    repo: https://{{vault_code_it4i_username | urlencode}}:{{vault_code_it4i_password| urlencode}}@code.it4i.cz/lexis/wp3/api
+    dest: api
+    version: devel
+
+- name: install config for portal code
+  shell: cp api/ansible/roles/irods_api/templates/irods_api.conf.j2 /etc/irods_api.conf
+
+- name: get python irods library
+  git:
+    repo: https://github.com/RubenGarcia/python-irodsclient
+    dest: python-irodsclient
+    version: openid
+
+- name: install python irods library
+  shell: python3 -m pip install ./python-irodsclient
+
+- name: install nginx
+  apt:
+    name: nginx-light
+
+- name: disable http site
+  file:
+    state: absent
+    path: /etc/nginx/sites-enabled/default
+
+- name: enable https site
+  copy:
+    src: ../files/https.conf
+    dest: /etc/nginx/sites-enabled/https.conf
+
+- name: patch https conf
+  lineinfile:
+    path: /etc/nginx/sites-enabled/https.conf
+    regexp: '        server_name  .*;'
+    line: '        server_name  {{wp3webserver_host}};'
+
+- name: cert (public)
+  copy:
+    src: ../files/cert.pem
+    dest: /etc/ssl/certs/cert.pem
+
+- name: cert (private)
+  copy:
+    src: ../files/cert.key
+    dest: /etc/ssl/certs/cert.key
+
+- name: cert (chain)
+  copy:
+    src: ../files/chain.pem
+    dest: chain.pem
+
+- name: combine cert and chain
+  shell: "cat chain.pem >> /etc/ssl/certs/cert.pem"
+
+- name: restart nginx
+  service:
+    state: restarted
+    name: nginx

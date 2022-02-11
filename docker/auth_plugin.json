@@ -1,0 +1,5 @@
+"openid": {
+  "token_service": "https://irods1.host:8080",
+  "token_service_key": "<service_key>"
+}
+

@@ -1,0 +1,5 @@
+- name: Configure iRODS DSI
+  become: true
+  become_method: sudo
+  become_user: root
+  import_tasks: config.yml

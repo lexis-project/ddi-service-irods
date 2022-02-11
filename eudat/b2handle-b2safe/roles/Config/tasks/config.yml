@@ -1,0 +1,65 @@
+- name: Replace DEFAULT_RESOURCE
+  lineinfile:
+    path: /opt/eudat/b2safe/packaging/install.conf
+    regexp: "DEFAULT_RESOURCE=demoResc"
+    line: "DEFAULT_RESOURCE={{ Resource }}"
+
+- name: Replace SERVER_ID
+  lineinfile:
+    path: /opt/eudat/b2safe/packaging/install.conf
+    regexp: "SERVER_ID=\"irods://<fully_qualified_hostname>:1247\""
+    line: "SERVER_ID=\"irods://{{ hostname }}:1247\""
+
+- name: Replace HANDLE_SERVER_URL
+  lineinfile:
+    path: /opt/eudat/b2safe/packaging/install.conf
+    regexp: "HANDLE_SERVER_URL=<https://epic3.storage.surfsara.nl:8001>"
+    line: "HANDLE_SERVER_URL={{ Handle_server_url }}"
+
+- name: Replace PRIVATE_KEY
+  lineinfile:
+    path: /opt/eudat/b2safe/packaging/install.conf
+    regexp: "PRIVATE_KEY=</path/prefix_suffix_index_privkey.pem>"
+    line: "PRIVATE_KEY={{ private_key_path }}"
+
+- name: REPLACE CERTIFICATE_ONLY
+  lineinfile:
+    path: /opt/eudat/b2safe/packaging/install.conf
+    regexp: "CERTIFICATE_ONLY=</path/prefix_suffix_index_certificate_only.pem>"
+    line: "CERTIFICATE_ONLY={{ cert_only_path }}"
+
+- name: Replace PREFIX
+  lineinfile:
+    path: /opt/eudat/b2safe/packaging/install.conf
+    regexp: "PREFIX=<ZZZ>"
+    line: "PREFIX={{ prefix }}"
+
+- name: Replace REVERSELOOKUP_USERNAME
+  lineinfile:
+    path: /opt/eudat/b2safe/packaging/install.conf
+    regexp: "REVERSELOOKUP_USERNAME=<ZZZ>"
+    line: "REVERSELOOKUP_USERNAME={{ reverse_lookup_user }}"
+
+- name: Replace HTTPS_VERIFY
+  lineinfile:
+    path: /opt/eudat/b2safe/packaging/install.conf
+    regexp: "HTTPS_VERIFY=\"True\""
+    line: "HTTPS_VERIFY=\"{{HTTPS_VERIFY }}\""
+
+- name: REPLACE USERS
+  lineinfile:
+    path: /opt/eudat/b2safe/packaging/install.conf
+    regexp: "USERS=\"user0#Zone0 user1#Zone1\""
+    line: "USERS=\"{{ irods_user }}#{{ irods_zone }}\""
+
+- name: Add the SERVERAPIREG parameter
+  lineinfile:
+    path: /opt/eudat/b2safe/packaging/install.conf
+    line: SERVERAPIREG="irods://{{ hostname }}:1247"
+    create: yes
+
+- name: Add the SERVERAPIPUB parameter
+  lineinfile:
+    path: /opt/eudat/b2safe/packaging/install.conf
+    line: SERVERAPIPUB="irods://{{ hostname }}:1247"
+    create: yes

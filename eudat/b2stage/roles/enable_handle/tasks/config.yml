@@ -1,0 +1,13 @@
+- name: Configure Configure handle in /etc/gridftp.conf
+  lineinfile:
+    path: "/etc/gridftp.conf"
+    line: "{{ item }}"
+  with_items:
+    - '#Resolution of PIDs'
+    - '$pidHandleServer "{{ handle_address }}"'
+
+- name: restart gridftp service
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    name: globus-gridftp-server

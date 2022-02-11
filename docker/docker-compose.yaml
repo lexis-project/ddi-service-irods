@@ -1,0 +1,14 @@
+version: "3"
+services:
+
+  irods-provider.it4i.cz:
+    build: .
+    hostname: irods-provider.it4i.cz
+
+  irods-consumer.it4i.cz:
+    build: .
+    hostname: irods-consumer.it4i.cz
+    links:
+     - irods-provider.it4i.cz
+
+

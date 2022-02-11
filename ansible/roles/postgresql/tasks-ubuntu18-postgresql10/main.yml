@@ -1,0 +1,5 @@
+- name: Install postgresql
+  become: true
+  become_method: sudo
+  become_user: root
+  import_tasks: postgresql.yml

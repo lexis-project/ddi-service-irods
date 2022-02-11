@@ -1,0 +1,3 @@
+base_path: /home/user/Ansible/irods-auth-plugin
+remote_path: /home/debian
+dist: stretch

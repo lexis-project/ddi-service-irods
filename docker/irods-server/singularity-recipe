@@ -1,0 +1,60 @@
+Bootstrap: docker
+From: docker://ubuntu:16.04
+
+%post
+
+PGDATA_DIR=/opt/irods-pgdata
+PG_BIN=/usr/lib/postgresql/9.5/bin
+
+# Install packages
+#sed -i 's/archive.ubuntu.com/tux.rainside.sk/g' /etc/apt/sources.list
+sed -i 's/archive.ubuntu.com/cz.archive.ubuntu.com\/ubuntu/g' /etc/apt/sources.list
+apt-get update&&\
+ apt-get -y dist-upgrade wget gnupg2 lsb-core apt-transport-https inetutils-ping vim&&\
+ wget -qO - https://packages.irods.org/irods-signing-key.asc | apt-key add -&&\
+ echo "deb [arch=amd64] https://packages.irods.org/apt/ $(lsb_release -sc) main" | tee /etc/apt/sources.list.d/renci-irods.list&&\
+ apt-get update&&\
+ apt-get -y install postgresql irods-server irods-database-plugin-postgres
+
+# Locale
+locale -a
+locale-gen en_US.UTF-8
+locale-gen en_US
+update-locale
+
+chmod 777 /opt
+
+# Create DB and start PostgreSQL server
+#su $USER -c '${PG_BIN}/initdb -D ${PGDATA_DIR} & ${PG_BIN}/pg_ctl -D ${PGDATA_DIR} -l /tmp/postgres.log -w start'
+#
+## Create DB for ICAT server
+#PSQL='psql -h localhost -d postgres'
+#
+#$PSQL -c "CREATE USER irods WITH PASSWORD 'testpassword';"
+#$PSQL -c 'CREATE DATABASE "ICAT";'
+#$PSQL -c 'GRANT ALL PRIVILEGES ON DATABASE "ICAT" TO irods;'
+#
+## Setup iRODS
+#cat provider.txt | python /var/lib/irods/scripts/setup_irods.py
+#
+## Copy the irods environment to be used by the user
+#cp ~/.irods/irods_environment.json /opt
+#
+## All set, stop irods and postgres
+#/var/lib/irods/irodsctl stop
+#${PG_BIN}/pg_ctl -D ${PGDATA_DIR} -l /tmp/postgres.log -w stop
+#
+## Set up permissions 
+#chmod a+rx -R /opt/irods-pgdata
+#chmod a+rwx -R /etc/irods /var/lib/irods /run
+
+# Delete old PID and lock dir for postgres
+#rm -rfv /run/postgresql
+
+%files
+singularity-entrypoint.sh /usr/local/bin/
+provider.txt /opt
+consumer.txt /opt
+
+%runscript
+/usr/local/bin/singularity-entrypoint.sh $@

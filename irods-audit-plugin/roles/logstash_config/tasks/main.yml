@@ -1,0 +1,6 @@
+
+- name: Configure rabbitmq
+  become: true
+  become_method: sudo
+  become_user: root
+  import_tasks: logstash_config.yml

@@ -1,0 +1,45 @@
+- name: cert (public)
+  copy:
+    src: ../files/cert.pem
+    dest: cert.pem
+
+- name: cert (private)
+  copy:
+    src: ../files/cert.key
+    dest: /etc/irods/server.key
+
+- name: cert (chain)
+  copy:
+    src: ../files/chain.pem
+    dest: chain.pem
+
+- name: combine cert and chain
+  shell: "cat cert.pem chain.pem > /etc/irods/chain.pem"
+
+
+- name: get admin key
+  set_fact:
+    adminkey: "{{hostvars[irods_host]['adminkey'].stdout}}"
+
+- name: get api key
+  uri:
+    url: https://{{broker_host}}/admin/key?owner=irods_server
+    headers:
+      Authorization: "Basic {{adminkey}}"
+    validate_certs: false
+  register: apikey
+
+- name: create dhparams.pem
+  shell: "openssl dhparam -2 -out /etc/irods/dhparams.pem 2048"
+
+- name: patch server_config.json
+  lineinfile:
+    path: /etc/irods/server_config.json
+    regexp: '        "authentication": .*,'
+    line: '        "authentication": { "openid": {"token_service": "https://{{broker_host}}", "token_service_key": "{{apikey.json.key}}", "token_exchange_min_port": 20200, "token_exchange_max_port": 20399 } },'
+
+- name: patch server irods_environment.json
+  lineinfile:
+    path: /var/lib/irods/.irods/irods_environment.json
+    regexp: '    "schema_version": "v3".*'
+    line: '    "schema_version": "v3", "irods_ssl_certificate_chain_file": "/etc/irods/chain.pem", "irods_ssl_certificate_key_file": "/etc/irods/server.key", "irods_ssl_dh_params_file": "/etc/irods/dhparams.pem"'

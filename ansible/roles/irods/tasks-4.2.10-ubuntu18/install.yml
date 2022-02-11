@@ -1,0 +1,46 @@
+- name: setup hostname
+  shell: echo $(ip addr | grep -C 2 ens | grep "inet " | awk '{print $2}' | awk 'BEGIN{FS="/"} {print $1}')" "$(hostname) >>  /etc/hosts
+
+- name: install irods 4.2.10
+  apt:
+    name: ['irods-runtime=4.2.10', 'irods-icommands=4.2.10', 'irods-server=4.2.10', 'irods-database-plugin-postgres=4.2.10']
+- name: Install pexpect
+  apt:
+    name: python-pexpect
+
+- name: install python3-psycopg2
+  apt:
+    name: python-psycopg2
+
+- name: Install iRODS
+  expect:
+    echo: yes
+    command: python /var/lib/irods/scripts/setup_irods.py
+    timeout: 800
+    responses:
+      "iRODS user": "{{ irods_user }}"
+      "iRODS group": "{{ irods_group }}"
+      "iRODS server\\'s role": "{{ server_role }}"
+      "ODBC driver for postgres": "{{ database }}"
+      "Database server\\'s hostname or IP": "{{ db_host }}"
+      "Database server\\'s port": "{{ db_port }}"
+      "Database name \\[": "{{ irods_db_name }}"
+      "Database username \\[": "{{ db_username }}"
+      "Please confirm": "{{ confirmation }}"
+      "Database password": "{{ db_password }}"
+      "Salt for passwords stored": "{{ salt }}"
+      "iRODS server\\'s zone name \\[": "{{ server_zone }}"
+      "iRODS server\\'s port \\[": "{{ server_port }}"
+      "iRODS server\\'s port range \\(begin\\) \\[": "{{ port_min }}"
+      "iRODS server\\'s port range \\(end\\) \\[": "{{ port_max }}"
+      "iRODS port range \\(begin\\) \\[": "{{ port_min }}"
+      "iRODS port range \\(end\\) \\[": "{{ port_max }}"
+      "Control Plane port \\[": "{{ control_port }}"
+      "Schema Validation Base URI \\(or off\\) \\[": "{{ validation_uri }}"
+      "iRODS server\\'s administrator username": "{{ admin_username }}"
+      "iRODS server\\'s zone key": "{{ vault_zone_key }}"
+      "iRODS server\\'s negotiation key": "{{ negotiation_key }}"
+      "Control Plane key": "{{ control_key }}"
+      "iRODS server\\'s administrator password": "{{ admin_password }}"
+      "iRODS Vault directory": "{{ vault_directory }}"
+      "iRODS catalog \\(ICAT\\) host": "{{ ICAT_catalog_host }}"

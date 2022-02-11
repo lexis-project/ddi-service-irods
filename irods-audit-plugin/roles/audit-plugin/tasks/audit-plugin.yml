@@ -1,0 +1,12 @@
+- name: Ensure apt cache is up to date
+  apt: update_cache=yes
+
+- name: Copy deb package to remote machine
+  copy:
+    src: "{{ base_path }}/inventory/irods-rule-engine-plugin-audit-amqp-4.2.3-ubuntu16-x86_64.deb" 
+    dest: "{{ remote_path }}"
+
+- name: Install iRODS audit-plugin
+  apt:
+    deb:  "{{ remote_path }}/irods-rule-engine-plugin-audit-amqp-4.2.3-ubuntu16-x86_64.deb"
+

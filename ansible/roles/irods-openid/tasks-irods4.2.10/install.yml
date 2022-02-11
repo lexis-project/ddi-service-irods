@@ -1,0 +1,59 @@
+- name: install git
+  apt:
+    name: git
+
+- name: install irods 4.2.10 runtime and dev
+  apt:
+      name: ['irods-runtime=4.2.10', 'irods-dev=4.2.10']
+
+- name: install irods-cmake
+  apt:
+    name: irods-externals-cmake3.11.4-0
+
+- name: install libcurl
+  apt:
+    name: libcurl4-gnutls-dev
+
+- name: install gssapi.h
+  apt:
+    name: libkrb5-dev
+
+- name: install irods clang
+  apt:
+    name: irods-externals-clang6.0-0
+
+- name: install irods jansson
+  apt:
+    name: irods-externals-jansson2.7-0
+
+- name: clean openid code directory
+  file:
+    path: irods_auth_plugin_openid
+    state: absent
+
+- name: Get openid code
+  git:
+    repo: https://github.com/lexis-project/irods_auth_plugin_openid
+    version: irods-4.2.10
+    dest: irods_auth_plugin_openid
+
+- name: get requisites
+  apt:
+    name: make
+- apt:
+    name: binutils
+- apt:
+    name: gcc-multilib
+
+# might need  ln -s /usr/include/locale.h /usr/include/xlocale.h ; see https://github.com/carla-simulator/carla/issues/503
+- name: create build directory
+  file:
+    path: build
+    state: directory
+
+- name: run cmake, build
+  shell: >
+    cd build;
+    /opt/irods-externals/cmake3.11.4-0/bin/cmake -DCMAKE_INSTALL_PREFIX:PATH=/ ../irods_auth_plugin_openid/;
+    make;
+    make install

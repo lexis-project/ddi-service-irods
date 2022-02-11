@@ -1,0 +1,18 @@
+- name: pip3
+  apt:
+    name: python3-pip
+
+- name: python3-psycopg2
+  apt:
+    name: python3-psycopg2
+
+- name: uwsgi-core
+  apt:
+    name: uwsgi-core
+
+- name: django
+  shell: python3 -m pip install "django>=2.2,<3.0"
+
+- name: uwsgi prerequisites
+  apt:
+    name: uwsgi-plugin-python3

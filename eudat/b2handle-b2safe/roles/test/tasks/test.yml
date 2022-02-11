@@ -1,0 +1,35 @@
+- name: Create the b2safe.txt test file
+  file:
+    path: "{{ B2SAFE_location }}/B2SAFE-core-b2safe-v4.2.0/b2safe.txt"
+    state: touch
+    mode: 0775
+
+- name: iput this file in iRODS
+  shell: "iput -f {{ B2SAFE_location }}/B2SAFE-core-b2safe-v4.2.0/b2safe.txt"
+
+- name: Create the eudatPidsColl.r rule file
+  file:
+    path: "{{ B2SAFE_location }}/B2SAFE-core-b2safe-v4.2.0/rules/eudatPidsColl.r"
+    state: touch
+    mode: 0775
+
+- name: Add the test function
+  lineinfile:
+    path: "{{ B2SAFE_location }}/B2SAFE-core-b2safe-v4.2.0/rules/eudatPidsColl.r"
+    line: "eudatPidsColl{EUDATCreatePID(\"None\", *coll_path, \"None\", \"None\", \"true\", *newPID);}"
+    create: yes
+
+- name: Add the input
+  lineinfile:
+    path: "{{ B2SAFE_location }}/B2SAFE-core-b2safe-v4.2.0/rules/eudatPidsColl.r"
+    line: "INPUT *coll_path=\"/{{ irods_zone }}/home/{{ irods_user }}/b2safe.txt\""
+    create: yes
+
+- name: Add the output
+  lineinfile:
+    path: "{{ B2SAFE_location }}/B2SAFE-core-b2safe-v4.2.0/rules/eudatPidsColl.r"
+    line: "OUTPUT *newPID,ruleExecOut"
+    create: yes
+
+- name: Execute the rule
+  shell: "irule -F {{ B2SAFE_location }}/B2SAFE-core-b2safe-v4.2.0/rules/eudatPidsColl.r"

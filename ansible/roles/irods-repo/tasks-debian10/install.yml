@@ -1,0 +1,10 @@
+- name: Add iRODS signing key
+  apt_key:
+    url: https://unstable.irods.org/irods-unstable-signing-key.asc
+    state: present
+
+- name: Get iRODS packages repository
+  shell: echo "deb [arch=amd64] https://unstable.irods.org/apt/ bionic main" | \ sudo tee /etc/apt/sources.list.d/renci-irods-unstable.list
+
+- name: Ensure apt cache is up to date
+  apt: update_cache=yes

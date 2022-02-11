@@ -1,0 +1,20 @@
+- name: create irods api user
+  postgresql_user:
+    name="{{api_user}}"
+    role_attr_flags="NOSUPERUSER,NOCREATEDB"
+
+- name: cleanup api database
+  postgresql_db:
+    name: irods_api
+    state: absent
+
+- name: setup api database
+  postgresql_db:
+    name: irods_api
+
+- name: setup api database user
+  postgresql_user:
+    db="irods_api"
+    name="{{api_user}}"
+    password="{{api_db_password }}"
+    priv="ALL"

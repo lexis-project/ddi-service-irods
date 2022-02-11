@@ -1,0 +1,10 @@
+- name: Deploy iRODS audit system
+
+  hosts: all
+  roles:
+    - rabbitmq
+    - audit-plugin
+    - elasticstack
+    - plugin_config
+    - rabbitmq_config
+    - logstash_config

@@ -1,0 +1,20 @@
+- name: Ensure apt cache is up to date
+  apt: update_cache=yes
+
+- name: Install Erlang
+  apt: 
+    name: erlang
+
+- name: Install RabbitMQ
+  apt:
+    name: rabbitmq-server
+
+- name: enable RabbitMQ
+  systemd:
+    name: rabbitmq-server
+    enabled: yes
+
+- name: Start RabbitMQ
+  systemd:
+    state: started
+    name: rabbitmq-server

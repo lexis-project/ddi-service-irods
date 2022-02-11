@@ -1,0 +1,42 @@
+- name: Run apt-get update
+  become: true
+  apt:
+    upgrade: yes
+    update_cache: yes
+    cache_valid_time: 86400 #One day
+
+- name: Install unzip
+  become: true
+  apt:
+    name: unzip
+
+- name: install java
+  apt:
+      name: openjdk-8-jdk-headless
+
+- name: Download HANDLE system
+  shell:
+    cmd: "wget  http://handle.net/hnr-source/handle-$HSJ_VERSION-distribution.tar.gz"
+    chdir: "{{ HANDLE_location }}"
+  environment:
+    HSJ_VERSION: "{{ HANDLE_VERISION }}"
+
+- name: Create HANDLE directory 1
+  become: true
+  file:
+    path: /hs
+    state: directory
+    mode: '0755'
+
+- name: Create HANDLE directory 2
+  become: true
+  file:
+    path: /hs/svr_1
+    state: directory
+    mode: '0755'
+
+- name: Extract file
+  become: true
+  shell:
+    cmd: "tar xzf {{ HANDLE_location }}/handle-{{ HANDLE_VERISION }}-distribution.tar.gz -C /hs"
+    chdir: "/hs"

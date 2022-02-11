@@ -1,0 +1,49 @@
+- name: Deploy postgresql
+  hosts: db
+  roles:
+    - postgresql
+
+- name: Configure postgresql
+  hosts: db
+  roles:
+    - dbconfig
+
+- name: Deploy irods
+  hosts: irods
+  roles:
+    - irods-repo
+    - irods
+
+- name: Deploy irods-openid-plugin
+  hosts: irods
+  roles:
+    - irods-openid
+
+- name: Deploy broker
+  hosts: broker
+  roles:
+    - django
+    - python-broker
+
+- name: configure irods-openid
+  hosts: irods
+  roles:
+    - irods-openid-config
+
+
+- name: irods openid plugin for api
+  hosts: webserver
+  roles:
+    - irods-repo
+    - irods-openid
+
+- name: webserver code
+  hosts: webserver
+  roles:
+    - django
+    - irods-api
+
+- name: clear api db
+  hosts: db
+  roles:
+    - dbconfig-api

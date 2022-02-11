@@ -1,0 +1,33 @@
+- name: Install unzip
+  become: true
+  apt:
+    name: unzip
+
+- name: Download B2SAFE version 4.2
+  shell:
+    cmd: "wget https://github.com/EUDAT-B2SAFE/B2SAFE-core/archive/b2safe-v4.2.0.zip"
+    chdir: "{{ B2SAFE_location }}"
+
+- name: Extract B2SAFE
+  unarchive:
+    src: "{{ B2SAFE_location }}/b2safe-v4.2.0.zip"
+    dest: "{{ B2SAFE_location }}"
+    remote_src: yes
+- name: Remove the B2SAFE zip file
+  file:
+    path: "{{ B2SAFE_location }}/b2safe-v4.2.0.zip"
+    state: absent
+
+- name: Generate deb package
+  shell:
+    cmd: "./create_deb_package.sh"
+    chdir: "{{ B2SAFE_location }}/B2SAFE-core-b2safe-v4.2.0/packaging"
+
+- name: install package
+  become: yes
+  shell: "sudo dpkg -i /home/{{ user }}/debbuild/irods-eudat-b2safe_4.2-0.deb"
+
+- name: Install pexpect
+  become: true
+  apt:
+    name: python-pexpect

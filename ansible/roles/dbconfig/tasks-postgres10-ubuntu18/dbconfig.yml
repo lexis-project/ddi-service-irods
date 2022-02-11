@@ -1,0 +1,81 @@
+- name: Replace listen address
+  lineinfile:
+    path: /etc/postgresql/10/main/postgresql.conf
+    regexp: "#listen_addresses = 'localhost'"
+    line: "listen_addresses = '*'"
+
+- name: get ip of irods host
+  shell: getent hosts {{ irods_host }} | awk '{ print $1 }'
+  register: irods_ip
+
+- name: get ip of broker host
+  shell: getent hosts {{broker_host }} | awk '{ print $1 }'
+  register: broker_ip
+
+- name: get ip of api host
+  shell: getent hosts {{wp3webserver_host}} | awk '{ print $1 }'
+  register: api_ip
+
+
+- name: listen to irods machine
+  lineinfile:
+    path: /etc/postgresql/10/main/pg_hba.conf
+    line: "host 		{{ irods_db_name }}		{{ db_username }} 		{{ irods_ip.stdout }}/32	md5"
+    create: yes
+
+- name: listen to python broker machine
+  lineinfile:
+    path: /etc/postgresql/10/main/pg_hba.conf
+    line: "host                 auth_microservice		{{broker_user}}		{{broker_ip.stdout }}/32      md5"
+    create: yes
+
+- name: listen to irods api machine
+  lineinfile:
+    path: /etc/postgresql/10/main/pg_hba.conf
+    line: "host                 irods_api               {{api_user}}         {{api_ip.stdout }}/32      md5"
+    create: yes
+
+- name: cleanup database
+  postgresql_db:
+    name: "{{ irods_db_name }}"
+    state: absent
+
+- name: Create a PostgreSQL Database
+  postgresql_db:
+    name="{{ irods_db_name }}"
+
+- name: Grant access to user
+  postgresql_user:
+    db="{{ irods_db_name }}"
+    name="irods"
+    password="{{ db_password }}"
+    priv="ALL"
+
+- name: Ensure user does not have unnecessary privilege
+  postgresql_user:
+    name="irods"
+    role_attr_flags="NOSUPERUSER,NOCREATEDB"
+
+- name: cleanup python broker database
+  postgresql_db:
+    name: auth_microservice
+    state: absent
+
+- name: setup python broker database
+  postgresql_db:
+    name: auth_microservice
+
+- name: setup python broker database user
+  postgresql_user:
+    db="auth_microservice"
+    name="{{broker_user}}"
+    password="{{ broker_db_password }}"
+    priv="ALL"
+
+- name: setup python broker database user permissions
+  postgresql_user:
+    name="{{broker_user}}"
+    role_attr_flags="NOSUPERUSER,NOCREATEDB"
+
+- name: irods api database
+  import_tasks: dbconfig-api.yml

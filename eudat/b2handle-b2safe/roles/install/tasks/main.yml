@@ -1,0 +1,4 @@
+- name: Install B2SAFE
+  become: true
+  become_user: irods
+  import_tasks: install.yml

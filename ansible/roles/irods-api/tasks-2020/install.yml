@@ -1,0 +1,178 @@
+#https://github.com/pyinstaller/pyinstaller/issues/4197
+- name: remove outdated packages
+  apt:
+    name: python3-cryptography
+    state: absent
+
+- name: install prerequisites
+  shell: python3 -m pip install mozilla_django_oidc cryptography globus_sdk
+
+- name: cleanup portal code
+  file:
+    path: irods-django
+    state: absent
+
+- name: get portal code
+  git:
+    repo: https://github.com/RubenGarcia/irods-django
+    dest: irods-django
+    version: backend
+
+- name: get python irods library
+  git:
+    repo: https://github.com/RubenGarcia/python-irodsclient
+    dest: python-irodsclient
+    version: openid
+
+- name: install python irods library
+  shell: python3 -m pip install ./python-irodsclient
+
+- name: install nginx
+  apt:
+    name: nginx-light
+
+- name: disable http site
+  file:
+    state: absent
+    path: /etc/nginx/sites-enabled/default
+
+- name: enable https site
+  copy:
+    src: ../files/https.conf
+    dest: /etc/nginx/sites-enabled/https.conf
+
+- name: patch https conf
+  lineinfile:
+    path: /etc/nginx/sites-enabled/https.conf
+    regexp: '        server_name  .*;'
+    line: '        server_name  {{wp3webserver_host}};'
+
+- name: cert (public)
+  copy:
+    src: ../files/cert.pem
+    dest: /etc/ssl/certs/cert.pem
+
+- name: cert (private)
+  copy:
+    src: ../files/cert.key
+    dest: /etc/ssl/certs/cert.key
+
+- name: cert (chain)
+  copy:
+    src: ../files/chain.pem
+    dest: chain.pem
+
+- name: combine cert and chain
+  shell: "cat chain.pem >> /etc/ssl/certs/cert.pem"
+
+- name: patch irods-django/demo/settings.py
+  lineinfile:
+    path: irods-django/demo/settings.py
+    regexp: "  'host':.*"
+    line: "  'host': '{{irods_host}}',"
+
+- lineinfile:
+    path: irods-django/demo/settings.py
+    regexp: "  'port':.*"
+    line: "  'port': '{{server_port}}',"
+
+- lineinfile:
+    path: irods-django/demo/settings.py
+    regexp: "  'openid_microservice':.*"
+    line: "  'openid_microservice': 'https://{{broker_host}}',"
+
+- name: generate key
+  shell: "tr -dc 'a-z0-9!@#$%^&*(-_=+)' < /dev/urandom | head -c50"
+  register: key
+
+- name: patch irods-django/moz_test/settings.py
+  lineinfile:
+    path: irods-django/moz_test/settings.py
+    regexp: "SECRET_KEY =.*"
+    line: "SECRET_KEY ='{{key.stdout}}'"
+
+- lineinfile:
+    path: irods-django/moz_test/settings.py
+    regexp: 'ALLOWED_HOSTS = \[.*'
+    line: "ALLOWED_HOSTS = ['{{wp3webserver_host}}']"
+
+- lineinfile:
+    path: irods-django/moz_test/settings.py
+    regexp: "OIDC_RP_CLIENT_ID =.*"
+    line: "OIDC_RP_CLIENT_ID = '{{broker_client_id}}'"
+
+- lineinfile:
+    path: irods-django/moz_test/settings.py
+    regexp: "OIDC_RP_CLIENT_SECRET =.*"
+    line: "OIDC_RP_CLIENT_SECRET = '{{broker_client_secret}}'"
+
+- lineinfile:
+    path: irods-django/moz_test/settings.py
+    regexp: "OIDC_OP_AUTHORIZATION_ENDPOINT = .*"
+    line: 'OIDC_OP_AUTHORIZATION_ENDPOINT = "{{keycloak_server}}/protocol/openid-connect/auth"'
+
+- lineinfile:
+    path: irods-django/moz_test/settings.py
+    regexp: "OIDC_OP_TOKEN_ENDPOINT = .*"
+    line: 'OIDC_OP_TOKEN_ENDPOINT = "{{keycloak_server}}/protocol/openid-connect/token"'
+
+- lineinfile:
+    path: irods-django/moz_test/settings.py
+    regexp: "OIDC_OP_USER_ENDPOINT = .*"
+    line: 'OIDC_OP_USER_ENDPOINT = "{{keycloak_server}}/protocol/openid-connect/userinfo"'
+
+- lineinfile:
+    path: irods-django/moz_test/settings.py
+    regexp: "OIDC_OP_JWKS_ENDPOINT = .*"
+    line: 'OIDC_OP_JWKS_ENDPOINT = "{{keycloak_server}}/protocol/openid-connect/certs"'
+
+- lineinfile:
+    path: irods-django/moz_test/settings.py
+    regexp: "LOGIN_REDIRECT_URL = .*"
+    line: 'LOGIN_REDIRECT_URL = "https://{{wp3webserver_host}}/"'
+
+- lineinfile:
+    path: irods-django/moz_test/settings.py
+    regexp: "LOGIN_URL = .*"
+    line: 'LOGIN_URL = "https://{{wp3webserver_host}}/"'
+
+- lineinfile:
+    path: irods-django/moz_test/settings.py
+    regexp: "LOGOUT_REDIRECT_URL = .*"
+    line: 'LOGOUT_REDIRECT_URL = "https://{{wp3webserver_host}}/"'
+
+- lineinfile:
+    path: irods-django/moz_test/settings.py
+    regexp: "        'NAME': '<db_name>',"
+    line: "        'NAME': 'irods_api',"
+
+- lineinfile:
+    path: irods-django/moz_test/settings.py
+    regexp: "        'USER': '<db_user>',"
+    line: "        'USER': '{{api_user}}',"
+
+- lineinfile:
+    path: irods-django/moz_test/settings.py
+    regexp: "        'HOST': '<db_host>',"
+    line: "        'HOST': '{{db_host}}',"
+
+- lineinfile:
+    path: irods-django/moz_test/settings.py
+    regexp: "        'PORT': '<db_port>',"
+    line: "        'PORT': '{{db_port}}',"
+
+- lineinfile:
+    path: irods-django/moz_test/settings.py
+    regexp: "        'PASSWORD': '<db_pass>',"
+    line: "        'PASSWORD': '{{api_db_password}}',"
+
+- name: create migrations
+  shell: cd irods-django; python3 manage.py makemigrations
+
+- name: apply migrations
+  shell: cd irods-django; python3 manage.py migrate
+
+- name: restart nginx
+  service:
+    state: restarted
+    name: nginx

@@ -1,0 +1,18 @@
+HANDLE_location: "/home/debian/test"
+HANDLE_status: "y"
+HANDLE_VERISION: "9.2.0"
+IPv4_6: "n"
+HANDLE_IP: "10.10.0.1"
+IPv_6: "::1"
+server_port: "2641"
+HTTP_port: "8000"
+enable_log: "y"
+site_ver_ser_number: 1
+description: "This is LEXIS HANDLE system"
+org_name: "LEXIS"
+contact_person: "John Doe"
+telephone: "849358304"
+email: "email@org.com"
+disbale_UDP: "y"
+encrypt_priv_key: "n"
+PREFIX: 12345

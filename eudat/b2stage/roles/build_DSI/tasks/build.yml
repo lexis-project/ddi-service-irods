@@ -1,0 +1,68 @@
+- name: get B2STAGE packages
+  git:
+    repo: https://github.com/EUDAT-B2STAGE/B2STAGE-GridFTP.git
+    dest: "{{ preferred_path }}/B2STAGE-GridFTP"
+
+- name: Create a directory if it does not exist
+  file:
+    path: "{{ preferred_path }}/iRODS_DSI"
+    state: directory
+    owner: "{{ user }}"
+    mode: 0777
+
+- name: ensure setup.sh exists
+  copy:
+    content: ""
+    dest: "{{ preferred_path }}/setup.sh"
+    force: no
+    owner: "{{ user }}"
+    mode: 0777
+
+- name: Add content
+  lineinfile:
+    path: "{{ preferred_path }}/setup.sh"
+    line: "{{ item }}"
+  with_items:
+    - 'export PATH=/opt/irods-externals/cmake3.5.2-0/bin:$PATH'
+    - 'export GLOBUS_LOCATION="/usr"'
+    - 'export IRODS_PATH="/usr"'
+    - 'export DEST_LIB_DIR="{{ preferred_path }}/iRODS_DSI"'
+    - 'export DEST_BIN_DIR="{{ preferred_path }}/iRODS_DSI"'
+    - 'export DEST_DIR_DIR="{{ preferred_path }}/iRODS_DSI"'
+    - 'export IRODS_EXTERNALS_PATH=/opt/irods-externals'
+    - 'export C_INCLUDE_PATH=/usr/include/globus'
+    - 'export IRODS_42_COMPAT=true'
+    - 'export FLAVOR=\"\"'
+
+
+- name: Do a cmake
+  shell:
+    cmd: "cmake {{ preferred_path }}/B2STAGE-GridFTP/CMakeLists.txt"
+  environment:
+    PATH: /opt/irods-externals/cmake3.5.2-0/bin:$PATH
+    GLOBUS_LOCATION: "/usr"
+    IRODS_PATH: "/usr"
+    DEST_LIB_DIR: "{{ preferred_path }}/iRODS_DSI"
+    DEST_BIN_DIR: "{{ preferred_path }}/iRODS_DSI"
+    DEST_DIR_DIR: "{{ preferred_path }}/iRODS_DSI"
+    IRODS_EXTERNALS_PATH: /opt/irods-externals
+    C_INCLUDE_PATH: /usr/include/globus
+    IRODS_42_COMPAT: true
+    FLAVOR: ""
+
+
+- name: make install
+  shell:
+    cmd: "make install"
+    chdir: "{{ preferred_path }}/B2STAGE-GridFTP"
+  environment:
+    PATH: /opt/irods-externals/cmake3.5.2-0/bin:$PATH
+    GLOBUS_LOCATION: "/usr"
+    IRODS_PATH: "/usr"
+    DEST_LIB_DIR: "{{ preferred_path }}/iRODS_DSI"
+    DEST_BIN_DIR: "{{ preferred_path }}/iRODS_DSI"
+    DEST_DIR_DIR: "{{ preferred_path }}/iRODS_DSI"
+    IRODS_EXTERNALS_PATH: /opt/irods-externals
+    C_INCLUDE_PATH: /usr/include/globus
+    IRODS_42_COMPAT: true
+    FLAVOR: ""

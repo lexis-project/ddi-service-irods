@@ -1,0 +1,8 @@
+- name: Deploy B2STAGE
+
+  hosts: all
+  roles:
+    - globus
+    - build_DSI
+    - config
+    - enable_handle

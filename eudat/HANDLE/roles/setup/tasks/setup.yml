@@ -1,0 +1,37 @@
+- name: Run setup
+  become: true
+  expect:
+    echo: yes
+    command: "/hs/handle-{{ HANDLE_VERISION }}/bin/hdl-setup-server /hs/svr_1"
+    timeout: 8
+    responses:
+      'Will this be a "primary" server': "{{ HANDLE_status }}"
+      "Will this be a dual-stack server": "{{ IPv4_6 }}"
+      "Through what network-accessible IPv6 address should clients connect to this server": "{{ IPv_6 }}"
+      "If different, enter the IPv6 address to which the server should bind": "{{ IPv_6 }}"
+      "Through what network-accessible IPv4 address should clients connect to this server": "{{ HANDLE_IP }}"
+      "Through what network-accessible IP address should clients connect to this server": "{{ HANDLE_IP }}"
+      "If different, enter the IPv4 address to which the server should bind": "{{ HANDLE_IP }}"
+      "If different, enter the IP address to which the server should bind": "{{ HANDLE_IP }}"
+      "port number this server will listen to": "{{ server_port }}"
+      "What port number will the HTTP interface be listening to": "{{ HTTP_port }}"
+      "Would you like to log all accesses to this server": "{{ enable_log }}"
+      "Enter the version/serial number of this site": "{{ site_ver_ser_number }}"
+      "Please enter a short description of this server": "{{ description }}"
+      "Please enter the name of your organization": "{{ org_name }}"
+      "Please enter the name of a contact person": "{{ contact_person }}"
+      "Please enter the telephone number of": "{{ telephone }}"
+      "Please enter the email address of": "{{ email }}"
+      "Do you need to disable UDP services": "{{ disbale_UDP }}"
+      "Server keys already exist, do you want to create new ones": "n"
+      "Administrator keys already exist, do you want to create new ones": "n"
+      "Would you like to copy this admin.war into your server": "y"
+      "Would you like to encrypt your private key": "{{ encrypt_priv_key }}"
+      "Please indicate whether log files should be automatically": "M"
+
+- name: Replace prefix
+  become: true
+  replace:
+    path: /hs/svr_1/config.dct
+    regexp: 'YOUR_PREFIX'
+    replace: "{{ PREFIX }}"

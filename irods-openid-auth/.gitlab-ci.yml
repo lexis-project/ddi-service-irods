@@ -1,0 +1,19 @@
+image: code.it4i.cz:5001/lexis/wp3/irods-openid-auth
+
+before_script:
+  - python3 -V  # Print out python version for debugging
+  
+install:
+  script:
+    - pip3 install auth_microservice/auth_microservice
+
+build-openid-plugin:
+  script:
+    - cd irods_auth_plugin_openid
+    - cmake3 . -DCMAKE_BUILD_TYPE=Debug
+    - make -j
+    - make package
+  artifacts:
+    paths:
+      - irods_auth_plugin_openid/irods-auth-plugin-openid-2.2.0-1.x86_64.rpm
+  

@@ -1,0 +1,16 @@
+{
+    "redirect_uri": "http://irods1.host:8080/authcallback",
+    "root_return_to": "http://irods1.host.cz:8080/callback",
+    "root_default_provider": "keycloak_openid",
+    "url_expiration_timeout": 300,
+    "real_time_validate_default": false,
+    "real_time_validate_cache_retention_timeout": 60,
+    "providers": {
+        "keycloak_openid": {
+            "standard": "OpenID Connect",
+            "client_id": "irods-auth-plugin",
+            "client_secret": "[client_uuid_secret]",
+            "metadata_url": "https://keycloak.host/auth/realms/LEXIS/.well-known/openid-configuration"
+        }
+    }
+}

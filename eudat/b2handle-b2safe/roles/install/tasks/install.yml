@@ -1,0 +1,22 @@
+- name: Copy private key
+  copy:
+    src: "{{local_private_key }}"
+    dest: "{{ private_key_path }}"
+    owner: irods
+    group: irods
+
+- name: Copy certificate path
+  copy:
+    src: "{{local_cert_only }}"
+    dest: "{{ cert_only_path }}"
+    owner: irods
+    group: irods
+
+- name: Install B2SAFE
+  expect:
+    echo: yes
+    command: "./install.sh"
+    chdir: /opt/eudat/b2safe/packaging/
+    timeout: 8
+    responses:
+      "enter the password belonging to the credentals of reverse lookup username": "{{ reverse_lookup_password }}"

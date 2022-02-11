@@ -1,0 +1,9 @@
+- name: Copy logstash config file  to remote machine
+  copy:
+    src: "{{ base_path }}/inventory/irods_audit.conf"
+    dest: "/etc/logstash/conf.d/irods_audit.conf"
+
+- name: Restart logstash
+  systemd:
+    state: restarted
+    name: logstash

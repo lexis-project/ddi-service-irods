@@ -1,0 +1,5 @@
+
+- name: Configure iRODS audit plugin
+  become: true
+  become_method: sudo
+  import_tasks: plugin_config.yml

@@ -1,0 +1,3 @@
+preferred_path: /home/debian
+user: debian
+handle_address: https://handle-test.host:8000/api/handles

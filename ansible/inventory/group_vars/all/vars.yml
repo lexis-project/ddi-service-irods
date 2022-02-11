@@ -1,0 +1,38 @@
+irods_host: 10.10.0.1
+db_host: 10.10.0.2
+broker_host: 10.10.0.3
+wp3webserver_host: 10.10.0.4
+
+irods_user: irods
+irods_group: irods
+server_role: 1
+database: 1
+db_port: 5432
+irods_db_name: ICAT
+db_username: irods
+confirmation: "yes"
+db_password: "{{ vault_irods_db_password }}"
+broker_db_password: "{{ vault_broker_db_password }}"
+api_db_password: "{{vault_api_db_password}}"
+salt: "{{ vault_salt }}"
+server_zone: tempZone
+server_port: 1247
+port_min: 20000
+port_max: 20199
+control_port: 1248
+validation_uri: file:///var/lib/irods/configuration_schemas
+admin_username: rods
+zone_key: "{{ vault_zone_key }}"
+negotiation_key: "{{ vault_negotiation_key }}"
+control_key: "{{ vault_control_key }}"
+admin_password: "{{ vault_irods_admin_password }}"
+vault_directory: /var/lib/irods/Vault
+postgres_password: "{{ vault_postgres_password }}"
+ICAT_catalog_host: host
+
+broker_user: authmicroservice
+api_user: api
+
+keycloak_server: https://keycloak.lrz.lexis-project.eu/auth/realms/portal-testing
+broker_client_secret: "{{vault_client_secret}}"
+broker_client_id: "{{vault_client_id}}"

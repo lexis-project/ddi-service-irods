@@ -1,0 +1,44 @@
+- name: Uncomment NODENAME
+  lineinfile:
+    path: /etc/rabbitmq/rabbitmq-env.conf
+    regexp: "#NODENAME=rabbit"
+    line: "NODENAME=rabbit"
+
+- name: Uncomment NODE_IP
+  lineinfile:
+    path: /etc/rabbitmq/rabbitmq-env.conf         
+    regexp: "#NODE_IP_ADDRESS=127.0.0.1"
+    line: "NODE_IP_ADDRESS=127.0.0.1"
+
+- name: Uncomment NODE_PORT
+  lineinfile:
+    path: /etc/rabbitmq/rabbitmq-env.conf         
+    regexp: "#NODE_PORT=5672"
+    line: "NODE_PORT=5672"
+
+- name: Restart RabbitMQ
+  systemd:
+    state: restarted
+    name: rabbitmq-server
+
+- name: Enables the rabbitmq_amqp1_0 plugin
+  rabbitmq_plugin:
+    names: rabbitmq_amqp1_0
+    state: enabled
+
+- name: Enables the rabbitmq_management plugin
+  rabbitmq_plugin:
+    names: rabbitmq_management
+    state: enabled
+
+- name: Add RabbitMQ user with admin rights
+  rabbitmq_user:
+    user: test
+    password: test
+    tags: administrator
+    vhost: /
+    configure_priv: .*
+    read_priv: .*
+    write_priv: .*
+    state: present
+

@@ -1,0 +1,4 @@
+- name: Configure B2SAFE
+  become: true
+  become_method: sudo
+  import_tasks: config.yml

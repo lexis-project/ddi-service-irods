@@ -1,0 +1,5 @@
+
+- name: Install Django
+  become: true
+  become_method: sudo
+  import_tasks: rabbitmq.yml
