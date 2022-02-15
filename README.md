@@ -1,4 +1,7 @@
 # ddi-service-irods
+
+<a href="https://doi.org/10.5281/zenodo.6046570"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.6046570.svg" alt="DOI"></a>
+
 iRODS zone deployment for LEXIS centres: this repository contains components for the 1st (lowest) level of the DDI.
 
 ## Acknowledgement
